@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Text, View, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
 import { COLORS } from '../theme/colors';
 import { useDispatch, useSelector } from 'react-redux';
 import { userConstants } from '../constants';
@@ -9,6 +9,8 @@ import Modal from 'react-native-modal';
 import { Input } from '../components/Input';
 import { Button } from '../components/Button';
 import Ionicons from '@expo/vector-icons/FontAwesome';
+import Delete from '@expo/vector-icons/MaterialCommunityIcons';
+import { Loader } from '../components/Loader';
 
 export default function Home() {
 
@@ -32,38 +34,68 @@ export default function Home() {
     }, [])
 
     const onSearchFilter = (text) => {
-        dispatch({ type: userConstants.SEARCH_ITEM_REQUEST, payload: text })
+        dispatch({
+            type: userConstants.SEARCH_ITEM_REQUEST,
+            payload: text
+        })
     }
 
-    const OnClick = (item) => {
-        dispatch({ type: userConstants.SELECT_ITEM_LIST_REQUEST, payload: item })
+    const onCardClick = (item) => {
+        dispatch({
+            type: userConstants.SELECT_ITEM_LIST_REQUEST,
+            payload: item
+        })
     }
 
     const deleteRow = (item) => {
-        dispatch({ type: userConstants.DELETE_ITEM_REQUEST, payload: item })
+        dispatch({
+            type: userConstants.DELETE_ITEM_REQUEST,
+            payload: item
+        })
     }
 
     const onLongPress = (item) => {
         const payload = { modalOpen: true, item }
-        dispatch({ type: userConstants.MODAL_REQUEST, payload })
+        dispatch({
+            type:
+                userConstants.MODAL_REQUEST,
+            payload
+        })
     }
 
     const onCloseModal = () => {
         const payload = { modalOpen: false }
-        dispatch({ type: userConstants.MODAL_REQUEST, payload })
+        dispatch({
+            type: userConstants.MODAL_REQUEST,
+            payload
+        })
     }
 
     const updateData = (data) => {
         const payload = { name, email, data }
-        dispatch({ type: userConstants.UPDATE_ITEM_REQUEST, payload })
+        dispatch({
+            type:
+                userConstants.UPDATE_ITEM_REQUEST,
+            payload
+        })
     }
 
     const _renderModalContent = () => {
         return (
-            <View style={styles.modalContent}>
-                <View style={{ justifyContent: 'space-between', flexDirection: 'row', margin: 10 }}>
-                    <Text style={{ fontSize: 20 }}>Update Data</Text>
-                    <Ionicons name='close' size={30} color={COLORS.black} onPress={() => onCloseModal()} />
+            <View
+                style={styles.modalContent}>
+                <View
+                    style={styles.wrapModalContainer}>
+                    <Text
+                        style={{ fontSize: 20 }}
+                    >Update Data
+                    </Text>
+                    <Ionicons
+                        name='close'
+                        size={30}
+                        color={COLORS.black}
+                        onPress={() => onCloseModal()}
+                    />
                 </View>
                 <Input
                     value={name}
@@ -81,8 +113,7 @@ export default function Home() {
                     color={COLORS.white}
                     backgroundColor={COLORS.black}
                     onButtonPress={() => updateData(update_data)}
-                    loading={response?.loader}
-                />
+                    loading={response?.loader} />
             </View>
         )
     };
@@ -93,13 +124,23 @@ export default function Home() {
             <TouchableOpacity
                 key={data.index}
                 activeOpacity={1}
-                onPress={() => OnClick(data.item)}
+                onPress={() => onCardClick(data.item)}
                 onLongPress={() => onLongPress(data.item)}
                 style={[styles.data,
                 { backgroundColor: data.item.isSelect ? COLORS.black : COLORS.white }
                 ]}>
-                <Text style={{ color: data.item.isSelect ? COLORS.white : COLORS.black }}>{data.item.name}</Text>
-                <Text style={{ color: data.item.isSelect ? COLORS.white : COLORS.black }}>{data.item.email}</Text>
+                <Text
+                    style={{
+                        color: data.item.isSelect ? COLORS.white : COLORS.black
+                    }}>
+                    {data.item.name}
+                </Text>
+                <Text
+                    style={{
+                        color: data.item.isSelect ? COLORS.white : COLORS.black
+                    }}>
+                    {data.item.email}
+                </Text>
             </TouchableOpacity>
         )
     }
@@ -108,40 +149,50 @@ export default function Home() {
         <TouchableOpacity
             activeOpacity={1}
             style={[styles.backRightBtn, styles.backRightBtnRight]}
-            onPress={() => deleteRow(data.item)}
-        >
-            <Text style={styles.backTextWhite}>Delete</Text>
+            onPress={() =>
+                deleteRow(data.item)
+            }>
+            <Delete
+                name='delete'
+                size={30}
+                color={COLORS.white} />
         </TouchableOpacity>
     );
 
     return (
         <View style={styles.container}>
-            <TextInput
-                style={styles.textinput}
-                placeholder='search item'
-                placeholderTextColor={COLORS.black}
-                defaultValue={searchText}
-                onChangeText={(text) => onSearchFilter(text)}
-            />
+            {response?.filter_data.length > 0 ?
+                <>
+                    <Input
+                        containerStyle={styles.textinput}
+                        placeholder='Search item'
+                        placeholderTextColor={COLORS.black}
+                        defaultValue={searchText}
+                        onChangeText={(text) =>
+                            onSearchFilter(text)}
+                    />
 
-            <View style={{ flex: 1 }}>
-                <SwipeListView
-                    disableRightSwipe
-                    data={response?.filter_data}
-                    renderItem={renderItem}
-                    renderHiddenItem={renderHiddenItem}
-                    leftOpenValue={75}
-                    rightOpenValue={-75}
-                    previewRowKey={'0'}
-                    previewOpenValue={-40}
-                    previewOpenDelay={3000}
-                />
-
-                <Modal isVisible={response?.modal_status}>
-                    {_renderModalContent()}
-                </Modal>
-
-            </View>
+                    <View style={{ flex: 1 }}>
+                        <SwipeListView
+                            disableRightSwipe
+                            data={response?.filter_data}
+                            renderItem={renderItem}
+                            renderHiddenItem={renderHiddenItem}
+                            rightOpenValue={-60}
+                        />
+                        <Modal
+                            isVisible={response?.modal_status}>
+                            {_renderModalContent()}
+                        </Modal>
+                    </View>
+                </> :
+                <View
+                    style={styles.loaderWrap}>
+                    <Loader
+                        status={response?.loader}
+                    />
+                </View>
+            }
         </View>
     );
 }
@@ -149,6 +200,15 @@ export default function Home() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+    },
+    loaderWrap: {
+        flex: 1,
+        justifyContent: 'center',
+    },
+    wrapModalContainer: {
+        justifyContent: 'space-between',
+        flexDirection: 'row',
+        margin: 10
     },
     data: {
         padding: 15,
@@ -189,5 +249,4 @@ const styles = StyleSheet.create({
         padding: 5,
         margin: 10,
     }
-
 });
